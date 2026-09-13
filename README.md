@@ -140,26 +140,76 @@ If you are playing with quality-of-life mods without using cheat commands, `IsCh
 
 ---
 
-## 🧪 How to Test It (3-Minute Proof Protocol)
+## 🧪 How to Verify It (3 Independent Ways to Prove It Works)
 
-You don't need any special developer tools or AI to prove this works. Here is a simple 3-step test anyone can do:
+We built three distinct verification methods so anyone—from a casual player to an experienced developer—can see and prove that achievements were blocked without this mod and are restored with it.
 
-### Step 1: Check the Log
-Launch Valheim. Open `Valheim/BepInEx/LogOutput.log` in Notepad and search for `IsModded`. You should see:
+---
+
+### Method 1: The One-Click Verifier App (`Verify-IsModded.exe`)
+The lowest overhead, easiest method. Run [`dist/Verify-IsModded.exe`](./dist/Verify-IsModded.exe) (or [`tools/Verify-IsModded.ps1`](./tools/Verify-IsModded.ps1)):
+
+It inspects your actual game files, decompiles the bytecode of `assembly_valheim.dll` live, and shows you a side-by-side simulation:
+
 ```text
-[Info :   IsModded] IsModded v1.0.0 loaded successfully! Modded achievements enabled: True.
+================================================================================
+        Valheim 1.0 :: isModded & Achievement Integrity Verifier                
+================================================================================
+[+] Valheim Directory : C:\Program Files (x86)\Steam\steamapps\common\Valheim
+
+--- [STEP 1: INSPECTING VALHEIM 1.0 BYTECODE] --------------------------------
+[OK] Found method: Achievements.IsCheatedAtAll()
+Scanning instruction stream for Game.isModded access...
+  -> IL_005B: ldsfld Game::isModded
+  [CONFIRMED] Valheim 1.0 directly checks Game.isModded when evaluating cheats!
+  If Game.isModded is True, the engine evaluates the session as CHEATED,
+  which forces CanGetAchievements() to return FALSE.
+
+--- [STEP 2: INSPECTING BEPINEX CHAINLOADER] ----------------------------------
+[OK] Found BepInEx method: Chainloader.SetIsModdedTrue()
+  -> BepInEx automatically sets Game.isModded = True on startup.
+
+--- [STEP 3: CHECKING ISMODDED PLUGIN STATUS] --------------------------------
+[PASS] Achievement bypass plugin detected: IsModded.dll
+       Location: ...\Valheim\BepInEx\plugins\IsModded.dll
+[PASS] Verified Harmony prefix hook targeting Achievements.IsCheatedAtAll
+
+================================================================================
+                               FINAL VERDICT                                    
+================================================================================
+Simulation of In-Game Achievement Evaluation (Legitimate Player with Mods):
+
+  Condition                    | Without IsModded          | With IsModded
+  -----------------------------+---------------------------+-----------------------
+  BepInEx Running              | YES (Game.isModded=True)  | YES (Game.isModded=True)
+  Character Devcommands        | FALSE                     | FALSE
+  World Cheat Modifiers        | FALSE                     | FALSE
+  Inventory Cheated Items      | FALSE                     | FALSE
+  -----------------------------+---------------------------+-----------------------
+  Achievements.IsCheatedAtAll  | TRUE  (Treats mod as cheat)| FALSE (Ignores isModded!)
+  Achievements.CanGet          | FALSE [BLOCKED]           | TRUE  [RESTORED!]
+  Steamworks.Unlock()          | NEVER CALLED              | CALLED ON PROGRESSION
+  -----------------------------+---------------------------+-----------------------
+
+>>> STATUS: READY! Your setup is configured to earn Steam achievements with mods.
 ```
 
-### Step 2: The In-Game Console Check
-1. Start or join a game.
-2. Press **F5** to open the console (ensure `-console` launch parameter is set in Steam).
-3. Type:
-   ```text
-   achievements
-   ```
-4. If you have `IsModded` installed and haven't used devcommands, it will report normal achievement status instead of claiming the session is cheated.
+---
 
-### Step 3: The "Meadows Pebble" Live Test
+### Method 2: Live In-Game F5 Command (`ismodded`)
+1. In-game, press **F5** to open the Valheim console.
+2. Type:
+   ```text
+   ismodded
+   ```
+3. It prints a live diagnostic report right inside the game engine, showing:
+   - Whether `Game.isModded` is active.
+   - What vanilla 1.0 would evaluate (Blocked).
+   - What the active game evaluates with the patch (Restored & Working).
+
+---
+
+### Method 3: The "Meadows Pebble" 30-Second Live Test
 1. Create a brand new character.
 2. Load into a fresh single-player world.
 3. Walk over to the first **Stone** or **Branch** on the ground and press **E** to pick it up.
