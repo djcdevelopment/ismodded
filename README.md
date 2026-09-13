@@ -1,5 +1,5 @@
-# Valheim 1.0 :: isModded & Achievements Guide
-### *A Technical Community Guide: Why Mods Block Achievements in 1.0, and How to Restore Them*
+# Valheim 1.0 :: isModded & Achievements Architecture
+### *Technical analysis, runtime decoupling, and verification suite for Valheim 1.0 Steam achievement progression*
 
 [![Valheim 1.0](https://img.shields.io/badge/Valheim-1.0%20(Deep%20North)-blue.svg)](#)
 [![BepInEx 5](https://img.shields.io/badge/BepInEx-5.4.2202-green.svg)](#)
@@ -10,73 +10,74 @@
 
 ![IsModded Architecture Banner](./assets/banner.jpg)
 
-## 🎮 Context & Overview
+## 📌 Overview
 
-With the release of Valheim 1.0 (Deep North / Ashlands), an official Discord announcement highlighted a new restriction:
-> **"We have learned that you cannot earn achievements while playing modded."**
+During the release of Valheim 1.0 (Deep North / Ashlands), an official community update noted:
+> *"We have learned that you cannot earn achievements while playing modded."*
 
-For players who use quality-of-life mods—such as inventory sorting, crafting conveniences, camera adjustments, or server administration tools—this created an unnecessary trade-off between standard modding and earning Steam achievements.
+For players and server communities utilizing client-side quality-of-life plugins—such as inventory management, crafting interfaces, camera adjustments, or administrative utilities—this policy introduced an unintended suppression of Steam achievement progression.
 
-This repository provides a transparent, zero-overhead technical breakdown and solution:
-1. A **decompiled bytecode explanation** of *why* this happens under the hood (no rumors or guesswork—just the actual C# code).
-2. An **interactive architecture diagram** compiled via [Archify](https://github.com/tt-a1i/archify) showing the exact engine call chain.
-3. A **standalone 8.7 KB plugin** ([`dist/IsModded.dll`](./dist/IsModded.dll)) that restores Steam achievements in seconds.
-4. A **15-line drop-in snippet** that any mod developer can embed directly into their own plugin to decouple achievements automatically.
-5. **Zero-dependency verification tools** ([`dist/Verify-IsModded.exe`](./dist/Verify-IsModded.exe), PowerShell script, and in-game F5 console command) to inspect and confirm integrity without external debuggers.
+This repository provides an open-source technical breakdown and solution:
+1. **Bytecode Root-Cause Analysis**: Inspection of the decompiled C# IL showing why `Game.isModded` causes achievement suppression.
+2. **Interactive Architecture Model**: A structured system flow compiled via [Archify](https://github.com/tt-a1i/archify) showing the exact engine evaluation paths.
+3. **Lightweight Runtime Plugin (`IsModded.dll`)**: An 8.7 KB Harmony patch that decouples `Game.isModded` from cheat validation while keeping genuine cheat protections active.
+4. **Embedded Snippet for Mod Authors**: A 15-line drop-in Harmony patch that authors can incorporate directly into existing mods without requiring a separate plugin.
+5. **Automated Verification Suite**: Standalone CLI executable (`Verify-IsModded.exe`), PowerShell verification script, and live in-game console command (`ismodded`) to inspect engine bytecode and validate runtime state.
 
 ---
 
-## 🗺️ Visual Architecture Diagram
+## 🗺️ System Architecture
 
-Here is the entire system architecture compiled directly with [Archify](https://github.com/tt-a1i/archify):
+The interaction flow below is compiled directly from the formal specification using [Archify](https://github.com/tt-a1i/archify):
 
 ![Valheim isModded Architecture Flow](./assets/architecture-archify-dark.png)
 
-> **Interactive Viewer**: Open [`docs/valheim-ismodded.html`](./docs/valheim-ismodded.html) in your browser for the full interactive diagram, featuring:
-> - **4 Guided Story Views**: *End-to-End Unlock Flow*, *Vanilla Mod Lockout*, *IsModded Prefix Decoupling*, and *Zero-Overhead Verification*.
-> - **Live Controls**: Pan, zoom, component inspections, and Dark/Light theme toggle.
-> - **Specs & Vector Exports**: Source [`docs/valheim-ismodded.architecture.json`](./docs/valheim-ismodded.architecture.json) and standalone [`assets/architecture-archify.svg`](./assets/architecture-archify.svg).
+> **Interactive Viewer**: Open [`docs/valheim-ismodded.html`](./docs/valheim-ismodded.html) in any browser for the full interactive model:
+> - **Guided Views**: *End-to-End Unlock Flow*, *Vanilla Mod Lockout*, *IsModded Prefix Decoupling*, and *Zero-Overhead Verification*.
+> - **Navigation**: Dynamic pan, zoom, component metadata inspection, and dark/light theme toggle.
+> - **Source & Vector Exports**: Specification in [`docs/valheim-ismodded.architecture.json`](./docs/valheim-ismodded.architecture.json) and standalone vector in [`assets/architecture-archify.svg`](./assets/architecture-archify.svg).
 
 ---
 
-## ⚡ The Quick Fix (For Players)
+## 📥 Installation (For Players)
 
-If you just want your achievements back while keeping your mods:
+To restore Steam achievement progression while running BepInEx:
 
-1. **Download** [`IsModded.dll`](./dist/IsModded.dll) (8.7 KB).
-2. **Drop it** into your Valheim mods folder:
+1. Download [`IsModded.dll`](./dist/IsModded.dll) (8.7 KB) from the repository [`dist/`](./dist/) directory or GitHub Releases.
+2. Place the file into your Valheim BepInEx plugins folder:
    ```text
-   Valheim/BepInEx/plugins/IsModded.dll
+   <Valheim-Directory>/BepInEx/plugins/IsModded.dll
    ```
-3. **Launch the game.** Play normally. Your Steam achievements will unlock as you progress!
+3. Launch the game normally. Steam achievements will record as milestones are achieved.
 
 ---
 
-## 🧐 The "Why": What Actually Happened in 1.0?
+## 🔬 Technical Analysis: Root Cause in Valheim 1.0
 
-Iron Gate did **not** create a complex anti-cheat system or scan your files for DLLs. What happened was the unintended consequence of an old, polite handshake.
+The suppression of achievements under modded environments is not driven by an anti-cheat engine or file integrity scanning. Instead, it stems from the coupling of a legacy telemetry flag with 1.0 achievement evaluation logic.
 
-### 1. The Polite Handshake (Years Ago)
-Years ago, Iron Gate added a field in `Game.cs` with a polite comment asking mod authors to set it:
+### 1. The `Game.isModded` Telemetry Field
+In early versions of Valheim, Iron Gate introduced a static boolean field in `Game.cs` designed to assist with customer support triage:
+
 ```csharp
-// Inside Valheim's Game.cs:
+// Valheim assembly_valheim.dll :: Game.cs
 public static bool isModded = false;
 
+// Note in codebase:
 // "While we don't officially support mods in Valheim at this time,
 // we ask that you please set the following isModded value to true in your mod.
 // This will place a small text in the menu to inform the player that their
 // game is modded and help us solving support issues. Thank you for your help!"
 ```
 
-### 2. BepInEx Was Being Polite
-To be good citizens, the BepInEx team added a method to their loader (`Chainloader.SetIsModdedTrue()`) that automatically finds `Game.isModded` and sets it to `true` whenever BepInEx runs.
+### 2. Automatic Flagging by BepInEx
+To cooperate with developer support guidelines, the BepInEx loader implemented an automated reflection helper (`Chainloader.SetIsModdedTrue()`) that sets `Game.isModded = true` whenever BepInEx initializes.
 
-### 3. Valheim 1.0 Tied It to Achievements
-When Iron Gate added Steam Achievements in 1.0, they wrote a function to check if the player was cheating. Notice line 18 below:
+### 3. Achievement Evaluation in Valheim 1.0
+With the introduction of Steam achievements in Valheim 1.0, an internal method `Achievements.IsCheatedAtAll()` was added to evaluate session eligibility. In addition to testing console cheat flags, world modifiers, and spawned items, the fallback condition evaluates `Game.isModded`:
 
 ```csharp
-// Direct decompilation from Valheim 1.0 assembly_valheim.dll:
-// Class: Achievements, Method: IsCheatedAtAll()
+// Valheim 1.0 assembly_valheim.dll :: Achievements.cs
 public static bool IsCheatedAtAll()
 {
     if (Time.frameCount == Achievements.m_cheatCheckFrame)
@@ -97,28 +98,29 @@ public static bool IsCheatedAtAll()
     }
     else
     {
-        // <--- THE SMOKING GUN: If you didn't cheat, it checks this:
+        // Evaluates Game.isModded directly as a cheat condition:
         Achievements.m_cheatCheckCache = Game.isModded; 
     }
     return Achievements.m_cheatCheckCache;
 }
 ```
 
-### 4. The Result
-Because BepInEx sets `Game.isModded = true`, `Achievements.IsCheatedAtAll()` returns `true`.
-Every time you craft an item, slay a boss, or chop a tree, `PlayerProfile.IncrementStat()` checks:
+### 4. Downstream Impact on Progression
+Whenever a progression milestone occurs (e.g., boss defeats, crafting, gathering), `PlayerProfile.IncrementStat()` evaluates the eligibility gate:
+
 ```csharp
 if (!Achievements.CanGetAchievements(false)) return;
 ```
-Because the game thinks you are "cheated," the achievement stat is immediately discarded, and Steam never receives the unlock signal!
+
+Because `Game.isModded` is `true`, `IsCheatedAtAll()` returns `true`, causing `CanGetAchievements()` to return `false`. The stat increment is silently discarded, preventing any call to `Steamworks.SteamUserStats.SetAchievement()`.
 
 ---
 
-## 🛠️ The Fix: How `IsModded` Works
+## 🛠️ Implementation: Harmony Prefix Decoupling
 
-`IsModded` uses a lightweight Harmony Prefix to hook `Achievements.IsCheatedAtAll()`.
+`IsModded` installs a lightweight Harmony Prefix on `Achievements.IsCheatedAtAll()`. 
 
-It checks genuine cheats (`m_usedCheats`, `IsWorldCheated()`, `AnyCheatedItem()`), but **completely ignores `Game.isModded`**:
+The hook preserves authentic cheat validation (`m_usedCheats`, `IsWorldCheated()`, `AnyCheatedItem()`), but decouples `Game.isModded` from the evaluation:
 
 ```csharp
 [HarmonyPatch(typeof(Achievements), nameof(Achievements.IsCheatedAtAll))]
@@ -127,34 +129,34 @@ static class Achievements_IsCheatedAtAll_Patch
     [HarmonyPrefix]
     static bool Prefix(ref bool __result)
     {
-        // 1. Check real cheats
+        // 1. Evaluate genuine cheat criteria
         bool profileCheated = (Game.instance != null) && Game.instance.GetPlayerProfile().m_usedCheats;
         bool worldCheated = Achievements.IsWorldCheated();
         bool itemCheated = (Player.m_localPlayer != null) && Player.m_localPlayer.GetInventory().AnyCheatedItem();
 
-        // 2. ONLY flag as cheated if actual cheats were used (ignore Game.isModded!)
+        // 2. Decouple Game.isModded: only flag if actual cheats were used
         Achievements.m_cheatCheckCache = profileCheated || worldCheated || itemCheated;
 
         __result = Achievements.m_cheatCheckCache;
-        return false; // Skip the vanilla method
+        return false; // Skip vanilla method execution
     }
 }
 ```
 
-If you are playing with quality-of-life mods without using cheat commands, `IsCheatedAtAll()` returns `false`, `CanGetAchievements()` returns `true`, and Steam achievements unlock naturally!
+For legitimate players with quality-of-life mods loaded, `IsCheatedAtAll()` evaluates to `false`, allowing `CanGetAchievements()` to return `true` and enabling standard Steam achievement triggers.
 
 ---
 
-## 🧪 How to Verify It (3 Independent Ways to Prove It Works)
+## 🧪 Verification Protocols
 
-We built three distinct verification methods so anyone—from a casual player to an experienced developer—can see and prove that achievements were blocked without this mod and are restored with it.
+Three independent verification methods are provided to audit and confirm achievement eligibility:
 
 ---
 
-### Method 1: The One-Click Verifier App (`Verify-IsModded.exe`)
-The lowest overhead, easiest method. Run [`dist/Verify-IsModded.exe`](./dist/Verify-IsModded.exe) (or [`tools/Verify-IsModded.ps1`](./tools/Verify-IsModded.ps1)):
+### Method 1: Standalone Bytecode Verifier (`Verify-IsModded.exe`)
+A zero-dependency CLI tool built on `Mono.Cecil`. Run [`dist/Verify-IsModded.exe`](./dist/Verify-IsModded.exe) or [`tools/Verify-IsModded.ps1`](./tools/Verify-IsModded.ps1):
 
-It inspects your actual game files, decompiles the bytecode of `assembly_valheim.dll` live, and shows you a side-by-side simulation:
+It decompiles local game assemblies live, detects the CIL instruction targeting `Game.isModded`, and provides an execution matrix:
 
 ```text
 ================================================================================
@@ -166,9 +168,7 @@ It inspects your actual game files, decompiles the bytecode of `assembly_valheim
 [OK] Found method: Achievements.IsCheatedAtAll()
 Scanning instruction stream for Game.isModded access...
   -> IL_005B: ldsfld Game::isModded
-  [CONFIRMED] Valheim 1.0 directly checks Game.isModded when evaluating cheats!
-  If Game.isModded is True, the engine evaluates the session as CHEATED,
-  which forces CanGetAchievements() to return FALSE.
+  [CONFIRMED] Valheim 1.0 directly checks Game.isModded when evaluating cheats.
 
 --- [STEP 2: INSPECTING BEPINEX CHAINLOADER] ----------------------------------
 [OK] Found BepInEx method: Chainloader.SetIsModdedTrue()
@@ -180,7 +180,7 @@ Scanning instruction stream for Game.isModded access...
 [PASS] Verified Harmony prefix hook targeting Achievements.IsCheatedAtAll
 
 ================================================================================
-                               FINAL VERDICT                                    
+                                FINAL VERDICT                                    
 ================================================================================
 Simulation of In-Game Achievement Evaluation (Legitimate Player with Mods):
 
@@ -191,47 +191,46 @@ Simulation of In-Game Achievement Evaluation (Legitimate Player with Mods):
   World Cheat Modifiers        | FALSE                     | FALSE
   Inventory Cheated Items      | FALSE                     | FALSE
   -----------------------------+---------------------------+-----------------------
-  Achievements.IsCheatedAtAll  | TRUE  (Treats mod as cheat)| FALSE (Ignores isModded!)
-  Achievements.CanGet          | FALSE [BLOCKED]           | TRUE  [RESTORED!]
+  Achievements.IsCheatedAtAll  | TRUE  (Treats mod as cheat)| FALSE (Ignores isModded)
+  Achievements.CanGet          | FALSE [BLOCKED]           | TRUE  [RESTORED]
   Steamworks.Unlock()          | NEVER CALLED              | CALLED ON PROGRESSION
   -----------------------------+---------------------------+-----------------------
 
->>> STATUS: READY! Your setup is configured to earn Steam achievements with mods.
+>>> STATUS: READY. Setup is configured to earn Steam achievements with mods.
 ```
 
 ---
 
-### Method 2: Live In-Game F5 Command (`ismodded`)
+### Method 2: Live In-Game Runtime Audit (`ismodded`)
 1. In-game, press **F5** to open the Valheim console.
-2. Type:
+2. Enter the audit command:
    ```text
    ismodded
    ```
-3. It prints a live diagnostic report right inside the game engine, showing:
-   - Whether `Game.isModded` is active.
-   - What vanilla 1.0 would evaluate (Blocked).
-   - What the active game evaluates with the patch (Restored & Working).
+3. The engine outputs a real-time diagnostic report indicating:
+   - State of `Game.isModded`.
+   - Projected vanilla evaluation (Blocked).
+   - Active runtime evaluation with the patch (Eligible & Active).
 
 ---
 
-### Method 3: The "Meadows Pebble" 30-Second Live Test
-1. Create a brand new character.
-2. Load into a fresh single-player world.
-3. Walk over to the first **Stone** or **Branch** on the ground and press **E** to pick it up.
-4. **Watch the screen**: The in-game achievement notification will pop up, and your Steam overlay will chime with the unlocked achievement!
+### Method 3: In-Game Progression Test
+1. Create a temporary character on a fresh local world.
+2. Collect the first stone or wood branch (`E`).
+3. The initial progression stat will fire, triggering the Steam achievement notification.
 
 ---
 
-## 👨‍💻 For Mod Authors: Embed This in Your Own Mod
+## 👨‍💻 Integration Guide (For Mod Authors)
 
-You do not have to tell your users to install `IsModded.dll`. If you maintain a mod (like `ComfyMods`, `ValheimPlus`, `Gizmo`, or your own QoL plugin), you can copy this single patch into your project:
+Mod developers wishing to bundle this decoupling logic directly into existing plugins can embed the following standalone patch:
 
 ```csharp
 using HarmonyLib;
 using UnityEngine;
 
 [HarmonyPatch(typeof(Achievements), nameof(Achievements.IsCheatedAtAll))]
-public static class RestoreModdedAchievementsPatch
+public static class DecoupleModdedAchievementsPatch
 {
     [HarmonyPrefix]
     public static bool Prefix(ref bool __result)
@@ -246,7 +245,7 @@ public static class RestoreModdedAchievementsPatch
         bool worldCheated = Achievements.IsWorldCheated();
         bool itemCheated = (Player.m_localPlayer != null) && Player.m_localPlayer.GetInventory().AnyCheatedItem();
 
-        // Allow modded play to earn achievements!
+        // Decouple Game.isModded: preserve legitimate cheat checks only
         Achievements.m_cheatCheckCache = profileCheated || worldCheated || itemCheated;
         __result = Achievements.m_cheatCheckCache;
         return false;
@@ -256,9 +255,9 @@ public static class RestoreModdedAchievementsPatch
 
 ---
 
-## ⚙️ Configuration Options
+## ⚙️ Configuration
 
-After launching the game once, a config file is generated at `Valheim/BepInEx/config/djc.valheim.ismodded.cfg`:
+Configuration is managed via `Valheim/BepInEx/config/djc.valheim.ismodded.cfg`:
 
 ```ini
 [General]
@@ -281,21 +280,19 @@ HideModdedWatermark = false
 
 ---
 
-## ❓ Frequently Asked Questions (FAQ)
+## ❓ Technical FAQ
 
-### Can this get me banned on Steam or VAC?
-**No.** Valheim is not a VAC-secured game (Valve Anti-Cheat is not used). Steam achievements for Valheim are client-stored via the standard Steamworks API (`SteamUserStats.SetAchievement`). Thousands of games allow modded achievements.
+### Does this interact with Valve Anti-Cheat (VAC)?
+**No.** Valheim does not utilize Valve Anti-Cheat. Achievement synchronization is handled via the standard client-side Steamworks API (`SteamUserStats.SetAchievement`).
 
-### Does this force cheats to enable achievements?
-**No.** By default (`AllowWithDevcommands = false`), if a player actually uses devcommands or spawns items in with cheats, Valheim will still disable achievements for that character. This mod **only** stops BepInEx itself from counting as a cheat.
+### Does this disable cheat detection for devcommands?
+**No.** By default (`AllowWithDevcommands = false`), characters or worlds that utilize developer console cheats (`devcommands`, `god`, `spawn`) remain ineligible for achievements according to vanilla rules. This patch exclusively decouples the `Game.isModded` flag.
 
-### Does this work on dedicated servers?
-**Yes.** Achievements are strictly client-side. The server does not track or grant Steam achievements; your local Valheim client communicates directly with Steamworks.
+### Does this function on dedicated servers?
+**Yes.** Achievements are client-evaluated and synced directly from the local client to Steamworks.
 
 ---
 
-## 📜 License & Community Rights
+## 📜 License
 
-This project is licensed under the **MIT License**. Feel free to fork it, embed the code in your own mods, redistribute the DLL, or adapt it however your community needs.
-
-*Skål, Vikings!*
+This project is released under the **MIT License**. Permitted uses include redistribution, modification, and direct embedding within third-party plugins.
