@@ -1,5 +1,5 @@
 # Valheim 1.0 :: isModded & Achievements Guide
-### *An Olive Branch to the Community: Why Mods Block Achievements in 1.0, and How to Restore Them*
+### *A Technical Community Guide: Why Mods Block Achievements in 1.0, and How to Restore Them*
 
 [![Valheim 1.0](https://img.shields.io/badge/Valheim-1.0%20(Deep%20North)-blue.svg)](#)
 [![BepInEx 5](https://img.shields.io/badge/BepInEx-5.4.2202-green.svg)](#)
@@ -10,19 +10,19 @@
 
 ![IsModded Architecture Banner](./assets/banner.jpg)
 
-## 🕊️ To the Valheim Modding Community
+## 🎮 Context & Overview
 
-When Valheim 1.0 (Deep North / Ashlands) released, many players and server communities were met with an unexpected roadblock:
+With the release of Valheim 1.0 (Deep North / Ashlands), an official Discord announcement highlighted a new restriction:
 > **"We have learned that you cannot earn achievements while playing modded."**
 
-If you love playing with quality-of-life mods—inventory sorting, camera tweaks, crafting helpers, or community server tools—suddenly you were faced with an unfair dilemma: **abandon your favorite mods or give up on Steam achievements.**
+For players who use quality-of-life mods—such as inventory sorting, crafting conveniences, camera adjustments, or server administration tools—this created an unnecessary trade-off between standard modding and earning Steam achievements.
 
-This repository is an **open-source olive branch** to the entire community: players, server admins, and mod developers alike. It contains:
-1. A **crystal-clear explanation** of *why* this happens under the hood (no rumors or speculation—just the decompiled C# code).
-2. A **visual architecture diagram** showing the exact call chain.
-3. A **tiny 8.7 KB plugin** ([`dist/IsModded.dll`](./dist/IsModded.dll)) that restores achievements in 5 seconds.
-4. A **15-line code snippet** that any mod author can copy directly into their own mods so users don't even need a separate plugin.
-5. A **step-by-step testing guide** that anyone can follow to verify it works with zero technical background.
+This repository provides a transparent, zero-overhead technical breakdown and solution:
+1. A **decompiled bytecode explanation** of *why* this happens under the hood (no rumors or guesswork—just the actual C# code).
+2. An **interactive architecture diagram** compiled via [Archify](https://github.com/tt-a1i/archify) showing the exact engine call chain.
+3. A **standalone 8.7 KB plugin** ([`dist/IsModded.dll`](./dist/IsModded.dll)) that restores Steam achievements in seconds.
+4. A **15-line drop-in snippet** that any mod developer can embed directly into their own plugin to decouple achievements automatically.
+5. **Zero-dependency verification tools** ([`dist/Verify-IsModded.exe`](./dist/Verify-IsModded.exe), PowerShell script, and in-game F5 console command) to inspect and confirm integrity without external debuggers.
 
 ---
 
