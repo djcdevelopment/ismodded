@@ -1,0 +1,51 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+    <LangVersion>12</LangVersion>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Deterministic>true</Deterministic>
+    <Optimize>true</Optimize>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AssemblyName>IsModded</AssemblyName>
+    <RootNamespace>IsModded</RootNamespace>
+    <Version>1.0.0</Version>
+    <GamePath Condition="'$(GamePath)' == ''">C:\Program Files (x86)\Steam\steamapps\common\Valheim</GamePath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="All" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="0Harmony" Private="false">
+      <HintPath>$(GamePath)\BepInEx\core\0Harmony.dll</HintPath>
+    </Reference>
+    <Reference Include="BepInEx" Private="false">
+      <HintPath>$(GamePath)\BepInEx\core\BepInEx.dll</HintPath>
+    </Reference>
+    <Reference Include="assembly_valheim" Private="false">
+      <HintPath>$(GamePath)\valheim_Data\Managed\publicized_assemblies\assembly_valheim_publicized.dll</HintPath>
+    </Reference>
+    <Reference Include="assembly_utils" Private="false">
+      <HintPath>$(GamePath)\valheim_Data\Managed\publicized_assemblies\assembly_utils_publicized.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine" Private="false">
+      <HintPath>$(GamePath)\valheim_Data\Managed\UnityEngine.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule" Private="false">
+      <HintPath>$(GamePath)\valheim_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UI" Private="false">
+      <HintPath>$(GamePath)\valheim_Data\Managed\UnityEngine.UI.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.TextMeshPro" Private="false">
+      <HintPath>$(GamePath)\valheim_Data\Managed\Unity.TextMeshPro.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <Target Name="CopyToDist" AfterTargets="Build">
+    <MakeDir Directories="$(ProjectDir)dist" />
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(ProjectDir)dist" />
+  </Target>
+</Project>
