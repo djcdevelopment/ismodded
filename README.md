@@ -28,9 +28,14 @@ This repository is an **open-source olive branch** to the entire community: play
 
 ## 🗺️ Visual Architecture Diagram
 
-Here is the entire story in one diagram:
+Here is the entire system architecture compiled directly with [Archify](https://github.com/tt-a1i/archify):
 
-![Valheim isModded Architecture Flow](./assets/architecture.svg)
+![Valheim isModded Architecture Flow](./assets/architecture-archify-dark.png)
+
+> **Interactive Viewer**: Open [`docs/valheim-ismodded.html`](./docs/valheim-ismodded.html) in your browser for the full interactive diagram, featuring:
+> - **4 Guided Story Views**: *End-to-End Unlock Flow*, *Vanilla Mod Lockout*, *IsModded Prefix Decoupling*, and *Zero-Overhead Verification*.
+> - **Live Controls**: Pan, zoom, component inspections, and Dark/Light theme toggle.
+> - **Specs & Vector Exports**: Source [`docs/valheim-ismodded.architecture.json`](./docs/valheim-ismodded.architecture.json) and standalone [`assets/architecture-archify.svg`](./assets/architecture-archify.svg).
 
 ---
 

@@ -1,0 +1,292 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 480" role="img" lang="en" aria-labelledby="archify-diagram-title archify-diagram-description" data-preset="signal-flow" data-quality-profile="showcase">
+        <title id="archify-diagram-title">Valheim 1.0 :: isModded &amp; Achievement Architecture</title>
+        <desc id="archify-diagram-description">Decoupling Voluntary Mod Detection from Steam Achievement Progression</desc>
+        <!-- Definitions -->
+        <defs>
+          <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" class="m-default" />
+          </marker>
+          <marker id="arrowhead-emphasis" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" class="m-emphasis" />
+          </marker>
+          <marker id="arrowhead-security" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" class="m-security" />
+          </marker>
+          <marker id="arrowhead-dashed" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" class="m-dashed" />
+          </marker>
+          <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+            <path d="M 40 0 L 0 0 0 40" class="c-grid" stroke-width="0.5"/>
+          </pattern>
+        </defs>
+
+        <!-- Background Grid -->
+        <rect width="100%" height="100%" fill="url(#grid)" />
+
+        <!-- Boundaries (behind everything) -->
+        <rect data-graph-role="structural-frame" data-composition-frame-kind="region" data-composition-frame-id="0" data-composition-frame-label="Valheim 1.0 Unity Runtime" x="10" y="50" width="1150" height="240" rx="12" class="c-region" stroke-width="1"/>
+
+        <rect data-graph-role="structural-frame" data-composition-frame-kind="security-group" data-composition-frame-id="1" data-composition-frame-label="Community Proof" x="250" y="310" width="450" height="110" rx="8" class="c-security-group" stroke-width="1"/>
+
+        <!-- Connection paths (before components for correct z-order) -->
+        <path data-edge-from="bepinex" data-edge-to="is_modded_flag" data-edge-label="SetIsModdedTrue()" data-edge-key="0" data-edge-id="bep-to-flag" data-composition-points="180,110;280,110" d="M 180 110 L 280 110" class="a-dashed" stroke-width="1.5" marker-end="url(#arrowhead-dashed)"/>
+        <path data-edge-from="is_modded_flag" data-edge-to="ismodded_hook" data-edge-label="Decoupled (ignored)" data-edge-key="1" data-edge-id="flag-to-hook" data-composition-points="420,110;520,110" d="M 420 110 L 520 110" class="a-security" stroke-width="1.5" marker-end="url(#arrowhead-security)"/>
+        <path data-edge-from="ismodded_hook" data-edge-to="cheat_eval" data-edge-label="HarmonyPrefix Hook" data-edge-key="2" data-edge-id="hook-to-eval" data-composition-points="595,140;595,210" d="M 595 140 L 595 210" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+        <path data-edge-from="player_events" data-edge-to="player_profile" data-edge-label="Trigger Stat" data-edge-key="3" data-edge-id="action-to-profile" data-composition-points="180,240;280,240" d="M 180 240 L 280 240" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+        <path data-edge-from="player_profile" data-edge-to="cheat_eval" data-edge-label="CanGetAchievements()" data-edge-key="4" data-edge-id="profile-to-eval" data-composition-points="420,240;520,240" d="M 420 240 L 520 240" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+        <path data-edge-from="cheat_eval" data-edge-to="ach_gate" data-edge-label="returns false (Clean)" data-edge-key="5" data-edge-id="eval-to-gate" data-composition-points="670,240;750,240" d="M 670 240 L 750 240" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+        <path data-edge-from="ach_gate" data-edge-to="steamworks_api" data-edge-label="Unlock Call" data-edge-key="6" data-edge-id="gate-to-steamworks" data-composition-points="900,240;980,240" d="M 900 240 L 980 240" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+        <path data-edge-from="steamworks_api" data-edge-to="steam_client" data-edge-label="StoreStats() Sync" data-edge-key="7" data-edge-id="steamworks-to-client" data-composition-points="1055,270;1055,340" d="M 1055 270 L 1055 340" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+        <path data-edge-from="verifier_tool" data-edge-to="player_profile" data-edge-label="Bytecode Scan" data-edge-key="8" data-edge-id="verifier-to-profile" data-composition-points="350,340;350,270" d="M 350 340 L 350 270" class="a-dashed" stroke-width="1.5" marker-end="url(#arrowhead-dashed)"/>
+        <path data-edge-from="f5_terminal" data-edge-to="cheat_eval" data-edge-label="Runtime Audit" data-edge-key="9" data-edge-id="f5-to-eval" data-composition-points="595,340;595,270" d="M 595 340 L 595 270" class="a-dashed" stroke-width="1.5" marker-end="url(#arrowhead-dashed)"/>
+
+        <!-- Components -->
+        <g id="node-bepinex" data-node-id="bepinex" data-node-label="BepInEx 5.4.2202" tabindex="0" role="button" aria-label="Focus BepInEx 5.4.2202, Chainloader Bootstrap, Valheim 1.0 Unity Runtime, GitHub" aria-pressed="false" data-node-kind="frontend" data-node-sublabel="Chainloader Bootstrap" data-node-tag="Mod Runtime" data-node-context="Valheim 1.0 Unity Runtime" data-node-brand="GitHub" data-node-brand-id="github" data-node-brand-status="preset" data-node-brand-source="https://github.com/logos">
+          <title>BepInEx 5.4.2202 Â· Chainloader Bootstrap Â· Valheim 1.0 Unity Runtime Â· Mod Runtime Â· GitHub</title>
+          <rect x="40" y="80" width="140" height="60" rx="6" class="c-mask"/>
+          <rect x="40" y="80" width="140" height="60" rx="6" class="c-frontend" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="frontend" class="semantic-sigil s-frontend" transform="translate(46 86) scale(0.6875)">
+            <rect x="2" y="3" width="12" height="10" rx="2"/>
+            <path d="M2 6.5h12"/>
+            <circle cx="4.1" cy="4.8" r=".7" class="sigil-fill"/>
+            <circle cx="6.3" cy="4.8" r=".7" class="sigil-fill"/>
+          </g>
+          <g aria-hidden="true" data-brand-mark="github" data-brand-title="GitHub" data-brand-status="preset" data-brand-source="https://github.com/logos" class="brand-mark" transform="translate(158 86)">
+            <rect width="16" height="16" rx="4" class="brand-mark-badge"/>
+            <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12" transform="translate(3 3) scale(0.4166666666666667)" fill="#181717"/>
+            <rect width="16" height="16" rx="4" class="brand-mark-frame"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="110" y="108" class="t-primary" font-size="8.7" font-weight="600" text-anchor="middle">BepInEx 5.4.2202</text>
+        <text data-detail="context" x="110" y="124" class="t-muted" font-size="9" text-anchor="middle">Chainloader Bootstrap</text>
+        <text data-detail="fine" x="110" y="132" class="t-frontend" font-size="7" text-anchor="middle">Mod Runtime</text>
+        </g>
+
+        <g id="node-is_modded_flag" data-node-id="is_modded_flag" data-node-label="Game.isModded" tabindex="0" role="button" aria-label="Focus Game.isModded, Static Flag: true, Valheim 1.0 Unity Runtime" aria-pressed="false" data-node-kind="database" data-node-sublabel="Static Flag: true" data-node-tag="Voluntary Flag" data-node-context="Valheim 1.0 Unity Runtime">
+          <title>Game.isModded Â· Static Flag: true Â· Valheim 1.0 Unity Runtime Â· Voluntary Flag</title>
+          <rect x="280" y="80" width="140" height="60" rx="6" class="c-mask"/>
+          <rect x="280" y="80" width="140" height="60" rx="6" class="c-database" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="database" class="semantic-sigil s-database" transform="translate(286 86) scale(0.6875)">
+            <ellipse cx="8" cy="4" rx="5" ry="2"/>
+            <path d="M3 4v8c0 1.1 2.2 2 5 2s5-.9 5-2V4M3 8c0 1.1 2.2 2 5 2s5-.9 5-2"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="350" y="108" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">Game.isModded</text>
+        <text data-detail="context" x="350" y="124" class="t-muted" font-size="9" text-anchor="middle">Static Flag: true</text>
+        <text data-detail="fine" x="350" y="132" class="t-database" font-size="7" text-anchor="middle">Voluntary Flag</text>
+        </g>
+
+        <g id="node-ismodded_hook" data-node-id="ismodded_hook" data-node-label="IsModded.dll" tabindex="0" role="button" aria-label="Focus IsModded.dll, Harmony Prefix Hook, Valheim 1.0 Unity Runtime, .NET" aria-pressed="false" data-node-kind="security" data-node-sublabel="Harmony Prefix Hook" data-node-tag="8.7 KB Plugin" data-node-context="Valheim 1.0 Unity Runtime" data-node-brand=".NET" data-node-brand-id="dotnet" data-node-brand-status="preset" data-node-brand-source="https://github.com/dotnet/brand/blob/c7d0f51b8ec59531332d05fb27a5b758a7a3d689/logo/dotnet-logo.svg">
+          <title>IsModded.dll Â· Harmony Prefix Hook Â· Valheim 1.0 Unity Runtime Â· 8.7 KB Plugin Â· .NET</title>
+          <rect x="520" y="80" width="150" height="60" rx="6" class="c-mask"/>
+          <rect x="520" y="80" width="150" height="60" rx="6" class="c-security" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="security" class="semantic-sigil s-security" transform="translate(526 86) scale(0.6875)">
+            <path d="M8 2.2 13 4v3.5c0 3.1-1.8 5.4-5 6.5-3.2-1.1-5-3.4-5-6.5V4Z"/>
+            <path d="m5.8 8 1.5 1.5 3-3"/>
+          </g>
+          <g aria-hidden="true" data-brand-mark="dotnet" data-brand-title=".NET" data-brand-status="preset" data-brand-source="https://github.com/dotnet/brand/blob/c7d0f51b8ec59531332d05fb27a5b758a7a3d689/logo/dotnet-logo.svg" class="brand-mark" transform="translate(648 86)">
+            <rect width="16" height="16" rx="4" class="brand-mark-badge"/>
+            <path d="M24 8.77h-2.468v7.565h-1.425V8.77h-2.462V7.53H24zm-6.852 7.565h-4.821V7.53h4.63v1.24h-3.205v2.494h2.953v1.234h-2.953v2.604h3.396zm-6.708 0H8.882L4.78 9.863a2.896 2.896 0 0 1-.258-.51h-.036c.032.189.048.592.048 1.21v5.772H3.157V7.53h1.659l3.965 6.32c.167.261.275.442.323.54h.024c-.04-.233-.06-.629-.06-1.185V7.529h1.372zm-8.703-.693a.868.829 0 0 1-.869.829.868.829 0 0 1-.868-.83.868.829 0 0 1 .868-.828.868.829 0 0 1 .869.829Z" transform="translate(3 3) scale(0.4166666666666667)" fill="#512BD4"/>
+            <rect width="16" height="16" rx="4" class="brand-mark-frame"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="595" y="108" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">IsModded.dll</text>
+        <text data-detail="context" x="595" y="124" class="t-muted" font-size="9" text-anchor="middle">Harmony Prefix Hook</text>
+        <text data-detail="fine" x="595" y="132" class="t-security" font-size="7" text-anchor="middle">8.7 KB Plugin</text>
+        </g>
+
+        <g id="node-player_events" data-node-id="player_events" data-node-label="Player Actions" tabindex="0" role="button" aria-label="Focus Player Actions, Boss kills / Crafting, Valheim 1.0 Unity Runtime" aria-pressed="false" data-node-kind="external" data-node-sublabel="Boss kills / Crafting" data-node-tag="In-Game Event" data-node-context="Valheim 1.0 Unity Runtime">
+          <title>Player Actions Â· Boss kills / Crafting Â· Valheim 1.0 Unity Runtime Â· In-Game Event</title>
+          <rect x="40" y="210" width="140" height="60" rx="6" class="c-mask"/>
+          <rect x="40" y="210" width="140" height="60" rx="6" class="c-external" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="external" class="semantic-sigil s-external" transform="translate(46 216) scale(0.6875)">
+            <rect x="2.5" y="5" width="8.5" height="8" rx="1.5"/>
+            <path d="M8 2.5h5.5V8M13.5 2.5 7.5 8.5"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="110" y="238" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">Player Actions</text>
+        <text data-detail="context" x="110" y="254" class="t-muted" font-size="9" text-anchor="middle">Boss kills / Crafting</text>
+        <text data-detail="fine" x="110" y="262" class="t-external" font-size="7" text-anchor="middle">In-Game Event</text>
+        </g>
+
+        <g id="node-player_profile" data-node-id="player_profile" data-node-label="PlayerProfile" tabindex="0" role="button" aria-label="Focus PlayerProfile, IncrementStat(), Valheim 1.0 Unity Runtime" aria-pressed="false" data-node-kind="backend" data-node-sublabel="IncrementStat()" data-node-tag="Stat Dispatcher" data-node-context="Valheim 1.0 Unity Runtime">
+          <title>PlayerProfile Â· IncrementStat() Â· Valheim 1.0 Unity Runtime Â· Stat Dispatcher</title>
+          <rect x="280" y="210" width="140" height="60" rx="6" class="c-mask"/>
+          <rect x="280" y="210" width="140" height="60" rx="6" class="c-backend" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(286 216) scale(0.6875)">
+            <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="350" y="238" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">PlayerProfile</text>
+        <text data-detail="context" x="350" y="254" class="t-muted" font-size="9" text-anchor="middle">IncrementStat()</text>
+        <text data-detail="fine" x="350" y="262" class="t-backend" font-size="7" text-anchor="middle">Stat Dispatcher</text>
+        </g>
+
+        <g id="node-cheat_eval" data-node-id="cheat_eval" data-node-label="Cheat Evaluator" tabindex="0" role="button" aria-label="Focus Cheat Evaluator, IsCheatedAtAll(), Valheim 1.0 Unity Runtime" aria-pressed="false" data-node-kind="security" data-node-sublabel="IsCheatedAtAll()" data-node-tag="Vanilla: Mod Block" data-node-context="Valheim 1.0 Unity Runtime">
+          <title>Cheat Evaluator Â· IsCheatedAtAll() Â· Valheim 1.0 Unity Runtime Â· Vanilla: Mod Block</title>
+          <rect x="520" y="210" width="150" height="60" rx="6" class="c-mask"/>
+          <rect x="520" y="210" width="150" height="60" rx="6" class="c-security" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="security" class="semantic-sigil s-security" transform="translate(526 216) scale(0.6875)">
+            <path d="M8 2.2 13 4v3.5c0 3.1-1.8 5.4-5 6.5-3.2-1.1-5-3.4-5-6.5V4Z"/>
+            <path d="m5.8 8 1.5 1.5 3-3"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="595" y="238" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">Cheat Evaluator</text>
+        <text data-detail="context" x="595" y="254" class="t-muted" font-size="9" text-anchor="middle">IsCheatedAtAll()</text>
+        <text data-detail="fine" x="595" y="262" class="t-security" font-size="7" text-anchor="middle">Vanilla: Mod Block</text>
+        </g>
+
+        <g id="node-ach_gate" data-node-id="ach_gate" data-node-label="Achievement Gate" tabindex="0" role="button" aria-label="Focus Achievement Gate, CanGetAchievements(), Valheim 1.0 Unity Runtime" aria-pressed="false" data-node-kind="backend" data-node-sublabel="CanGetAchievements()" data-node-tag="Progression Gate" data-node-context="Valheim 1.0 Unity Runtime">
+          <title>Achievement Gate Â· CanGetAchievements() Â· Valheim 1.0 Unity Runtime Â· Progression Gate</title>
+          <rect x="750" y="210" width="150" height="60" rx="6" class="c-mask"/>
+          <rect x="750" y="210" width="150" height="60" rx="6" class="c-backend" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(756 216) scale(0.6875)">
+            <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="825" y="238" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">Achievement Gate</text>
+        <text data-detail="context" x="825" y="254" class="t-muted" font-size="9" text-anchor="middle">CanGetAchievements()</text>
+        <text data-detail="fine" x="825" y="262" class="t-backend" font-size="7" text-anchor="middle">Progression Gate</text>
+        </g>
+
+        <g id="node-steamworks_api" data-node-id="steamworks_api" data-node-label="Steamworks.NET" tabindex="0" role="button" aria-label="Focus Steamworks.NET, SetAchievement(), Valheim 1.0 Unity Runtime" aria-pressed="false" data-node-kind="messagebus" data-node-sublabel="SetAchievement()" data-node-tag="Native Steam API" data-node-context="Valheim 1.0 Unity Runtime">
+          <title>Steamworks.NET Â· SetAchievement() Â· Valheim 1.0 Unity Runtime Â· Native Steam API</title>
+          <rect x="980" y="210" width="150" height="60" rx="6" class="c-mask"/>
+          <rect x="980" y="210" width="150" height="60" rx="6" class="c-messagebus" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="messagebus" class="semantic-sigil s-messagebus" transform="translate(986 216) scale(0.6875)">
+            <path d="M2.5 4.5h11M2.5 8h11M2.5 11.5h11"/>
+            <circle cx="5" cy="4.5" r="1" class="sigil-fill"/>
+            <circle cx="10.5" cy="8" r="1" class="sigil-fill"/>
+            <circle cx="7" cy="11.5" r="1" class="sigil-fill"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="1055" y="238" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">Steamworks.NET</text>
+        <text data-detail="context" x="1055" y="254" class="t-muted" font-size="9" text-anchor="middle">SetAchievement()</text>
+        <text data-detail="fine" x="1055" y="262" class="t-messagebus" font-size="7" text-anchor="middle">Native Steam API</text>
+        </g>
+
+        <g id="node-verifier_tool" data-node-id="verifier_tool" data-node-label="Verify-IsModded" tabindex="0" role="button" aria-label="Focus Verify-IsModded, CLI &amp; PowerShell, Community Proof, .NET" aria-pressed="false" data-node-kind="frontend" data-node-sublabel="CLI &amp; PowerShell" data-node-tag="IL Decompiler" data-node-context="Community Proof" data-node-brand=".NET" data-node-brand-id="dotnet" data-node-brand-status="preset" data-node-brand-source="https://github.com/dotnet/brand/blob/c7d0f51b8ec59531332d05fb27a5b758a7a3d689/logo/dotnet-logo.svg">
+          <title>Verify-IsModded Â· CLI &amp; PowerShell Â· Community Proof Â· IL Decompiler Â· .NET</title>
+          <rect x="280" y="340" width="140" height="60" rx="6" class="c-mask"/>
+          <rect x="280" y="340" width="140" height="60" rx="6" class="c-frontend" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="frontend" class="semantic-sigil s-frontend" transform="translate(286 346) scale(0.6875)">
+            <rect x="2" y="3" width="12" height="10" rx="2"/>
+            <path d="M2 6.5h12"/>
+            <circle cx="4.1" cy="4.8" r=".7" class="sigil-fill"/>
+            <circle cx="6.3" cy="4.8" r=".7" class="sigil-fill"/>
+          </g>
+          <g aria-hidden="true" data-brand-mark="dotnet" data-brand-title=".NET" data-brand-status="preset" data-brand-source="https://github.com/dotnet/brand/blob/c7d0f51b8ec59531332d05fb27a5b758a7a3d689/logo/dotnet-logo.svg" class="brand-mark" transform="translate(398 346)">
+            <rect width="16" height="16" rx="4" class="brand-mark-badge"/>
+            <path d="M24 8.77h-2.468v7.565h-1.425V8.77h-2.462V7.53H24zm-6.852 7.565h-4.821V7.53h4.63v1.24h-3.205v2.494h2.953v1.234h-2.953v2.604h3.396zm-6.708 0H8.882L4.78 9.863a2.896 2.896 0 0 1-.258-.51h-.036c.032.189.048.592.048 1.21v5.772H3.157V7.53h1.659l3.965 6.32c.167.261.275.442.323.54h.024c-.04-.233-.06-.629-.06-1.185V7.529h1.372zm-8.703-.693a.868.829 0 0 1-.869.829.868.829 0 0 1-.868-.83.868.829 0 0 1 .868-.828.868.829 0 0 1 .869.829Z" transform="translate(3 3) scale(0.4166666666666667)" fill="#512BD4"/>
+            <rect width="16" height="16" rx="4" class="brand-mark-frame"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="350" y="368" class="t-primary" font-size="9.3" font-weight="600" text-anchor="middle">Verify-IsModded</text>
+        <text data-detail="context" x="350" y="384" class="t-muted" font-size="9" text-anchor="middle">CLI &amp; PowerShell</text>
+        <text data-detail="fine" x="350" y="392" class="t-frontend" font-size="7" text-anchor="middle">IL Decompiler</text>
+        </g>
+
+        <g id="node-f5_terminal" data-node-id="f5_terminal" data-node-label="F5 Console" tabindex="0" role="button" aria-label="Focus F5 Console, Command: &#39;ismodded&#39;, Community Proof" aria-pressed="false" data-node-kind="frontend" data-node-sublabel="Command: &#39;ismodded&#39;" data-node-tag="Live Memory Audit" data-node-context="Community Proof">
+          <title>F5 Console Â· Command: &#39;ismodded&#39; Â· Community Proof Â· Live Memory Audit</title>
+          <rect x="520" y="340" width="150" height="60" rx="6" class="c-mask"/>
+          <rect x="520" y="340" width="150" height="60" rx="6" class="c-frontend" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="frontend" class="semantic-sigil s-frontend" transform="translate(526 346) scale(0.6875)">
+            <rect x="2" y="3" width="12" height="10" rx="2"/>
+            <path d="M2 6.5h12"/>
+            <circle cx="4.1" cy="4.8" r=".7" class="sigil-fill"/>
+            <circle cx="6.3" cy="4.8" r=".7" class="sigil-fill"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="595" y="368" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">F5 Console</text>
+        <text data-detail="context" x="595" y="384" class="t-muted" font-size="9" text-anchor="middle">Command: &#39;ismodded&#39;</text>
+        <text data-detail="fine" x="595" y="392" class="t-frontend" font-size="7" text-anchor="middle">Live Memory Audit</text>
+        </g>
+
+        <g id="node-steam_client" data-node-id="steam_client" data-node-label="Steam Client" tabindex="0" role="button" aria-label="Focus Steam Client, Overlay &amp; Community, Architecture component" aria-pressed="false" data-node-kind="cloud" data-node-sublabel="Overlay &amp; Community" data-node-tag="Achievement Unlocked" data-node-context="Architecture component">
+          <title>Steam Client Â· Overlay &amp; Community Â· Architecture component Â· Achievement Unlocked</title>
+          <rect x="980" y="340" width="150" height="60" rx="6" class="c-mask"/>
+          <rect x="980" y="340" width="150" height="60" rx="6" class="c-cloud" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="cloud" class="semantic-sigil s-cloud" transform="translate(986 346) scale(0.6875)">
+            <path d="M4.3 12.5h7.3a2.4 2.4 0 0 0 .2-4.8 4 4 0 0 0-7.5-1.3A3.1 3.1 0 0 0 4.3 12.5Z"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="1055" y="368" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">Steam Client</text>
+        <text data-detail="context" x="1055" y="384" class="t-muted" font-size="9" text-anchor="middle">Overlay &amp; Community</text>
+        <text data-detail="fine" x="1055" y="392" class="t-cloud" font-size="7" text-anchor="middle">Achievement Unlocked</text>
+        </g>
+
+        <!-- Connection labels -->
+        <g data-detail="context" data-edge-from="bepinex" data-edge-to="is_modded_flag" data-edge-label="SetIsModdedTrue()" data-edge-key="0" data-edge-id="bep-to-flag">
+          <rect x="184.2" y="66" width="91.6" height="14" rx="3" class="c-mask"/>
+          <text x="230" y="76" class="t-messagebus" font-size="8" text-anchor="middle">SetIsModdedTrue()</text>
+        </g>
+        <g data-detail="context" data-edge-from="is_modded_flag" data-edge-to="ismodded_hook" data-edge-label="Decoupled (ignored)" data-edge-key="1" data-edge-id="flag-to-hook">
+          <rect x="419.4" y="66" width="101.2" height="14" rx="3" class="c-mask"/>
+          <text x="470" y="76" class="t-security" font-size="8" text-anchor="middle">Decoupled (ignored)</text>
+        </g>
+        <g data-detail="context" data-edge-from="ismodded_hook" data-edge-to="cheat_eval" data-edge-label="HarmonyPrefix Hook" data-edge-key="2" data-edge-id="hook-to-eval">
+          <rect x="546.8" y="140" width="96.39999999999999" height="14" rx="3" class="c-mask"/>
+          <text x="595" y="150" class="t-backend" font-size="8" text-anchor="middle">HarmonyPrefix Hook</text>
+        </g>
+        <g data-detail="context" data-edge-from="player_events" data-edge-to="player_profile" data-edge-label="Trigger Stat" data-edge-key="3" data-edge-id="action-to-profile">
+          <rect x="196.2" y="196" width="67.6" height="14" rx="3" class="c-mask"/>
+          <text x="230" y="206" class="t-backend" font-size="8" text-anchor="middle">Trigger Stat</text>
+        </g>
+        <g data-detail="context" data-edge-from="player_profile" data-edge-to="cheat_eval" data-edge-label="CanGetAchievements()" data-edge-key="4" data-edge-id="profile-to-eval">
+          <rect x="417" y="196" width="106" height="14" rx="3" class="c-mask"/>
+          <text x="470" y="206" class="t-backend" font-size="8" text-anchor="middle">CanGetAchievements()</text>
+        </g>
+        <g data-detail="context" data-edge-from="cheat_eval" data-edge-to="ach_gate" data-edge-label="returns false (Clean)" data-edge-key="5" data-edge-id="eval-to-gate">
+          <rect x="654.6" y="196" width="110.8" height="14" rx="3" class="c-mask"/>
+          <text x="710" y="206" class="t-backend" font-size="8" text-anchor="middle">returns false (Clean)</text>
+        </g>
+        <g data-detail="context" data-edge-from="ach_gate" data-edge-to="steamworks_api" data-edge-label="Unlock Call" data-edge-key="6" data-edge-id="gate-to-steamworks">
+          <rect x="908.6" y="196" width="62.8" height="14" rx="3" class="c-mask"/>
+          <text x="940" y="206" class="t-backend" font-size="8" text-anchor="middle">Unlock Call</text>
+        </g>
+        <g data-detail="context" data-edge-from="steamworks_api" data-edge-to="steam_client" data-edge-label="StoreStats() Sync" data-edge-key="7" data-edge-id="steamworks-to-client">
+          <rect x="1009.2" y="270" width="91.6" height="14" rx="3" class="c-mask"/>
+          <text x="1055" y="280" class="t-backend" font-size="8" text-anchor="middle">StoreStats() Sync</text>
+        </g>
+        <g data-detail="context" data-edge-from="verifier_tool" data-edge-to="player_profile" data-edge-label="Bytecode Scan" data-edge-key="8" data-edge-id="verifier-to-profile">
+          <rect x="313.8" y="300" width="72.4" height="14" rx="3" class="c-mask"/>
+          <text x="350" y="310" class="t-messagebus" font-size="8" text-anchor="middle">Bytecode Scan</text>
+        </g>
+        <g data-detail="context" data-edge-from="f5_terminal" data-edge-to="cheat_eval" data-edge-label="Runtime Audit" data-edge-key="9" data-edge-id="f5-to-eval">
+          <rect x="558.8" y="300" width="72.4" height="14" rx="3" class="c-mask"/>
+          <text x="595" y="310" class="t-messagebus" font-size="8" text-anchor="middle">Runtime Audit</text>
+        </g>
+
+        <!-- Boundary labels (foreground masks keep routes out of titles) -->
+        <g data-graph-role="structural-frame-label" data-composition-frame-id="0" data-composition-frame-kind="region" data-composition-frame-label="Valheim 1.0 Unity Runtime">
+          <rect data-graph-role="structural-frame-label-mask" x="14" y="60" width="145" height="16" rx="3" class="c-mask"/>
+          <text data-boundary-label="" x="18" y="73" class="t-cloud" font-size="9" font-weight="600">Valheim 1.0 Unity Runtime</text>
+        </g>
+
+        <g data-graph-role="structural-frame-label" data-composition-frame-id="1" data-composition-frame-kind="security-group" data-composition-frame-label="Community Proof">
+          <rect data-graph-role="structural-frame-label-mask" x="254" y="320" width="91" height="16" rx="3" class="c-mask"/>
+          <text data-boundary-label="" x="258" y="333" class="t-security" font-size="9" font-weight="600">Community Proof</text>
+        </g>
+
+        <!-- Legend -->
+        <g data-legend="" data-legend-bridge="">
+          <text x="40" y="444" class="t-primary" font-size="12" font-weight="650">Legend</text>
+          <g data-legend-semantic-kind="frontend" data-legend-kind="frontend" data-legend-label="Frontend" data-legend-x="40" data-legend-baseline="464" data-legend-width="83">
+            <rect x="40" y="455" width="16" height="10" rx="2.5" class="c-frontend" stroke-width="1"/>
+            <text x="62" y="464" class="t-muted" font-size="10" font-weight="500">Frontend</text>
+          </g>
+          <g data-legend-semantic-kind="backend" data-legend-kind="backend" data-legend-label="Backend" data-legend-x="145" data-legend-baseline="464" data-legend-width="78">
+            <rect x="145" y="455" width="16" height="10" rx="2.5" class="c-backend" stroke-width="1"/>
+            <text x="167" y="464" class="t-muted" font-size="10" font-weight="500">Backend</text>
+          </g>
+          <g data-legend-semantic-kind="database" data-legend-kind="database" data-legend-label="Database" data-legend-x="245" data-legend-baseline="464" data-legend-width="83">
+            <rect x="245" y="455" width="16" height="10" rx="2.5" class="c-database" stroke-width="1"/>
+            <text x="267" y="464" class="t-muted" font-size="10" font-weight="500">Database</text>
+          </g>
+          <g data-legend-semantic-kind="cloud" data-legend-kind="cloud" data-legend-label="Cloud" data-legend-x="350" data-legend-baseline="464" data-legend-width="68">
+            <rect x="350" y="455" width="16" height="10" rx="2.5" class="c-cloud" stroke-width="1"/>
+            <text x="372" y="464" class="t-muted" font-size="10" font-weight="500">Cloud</text>
+          </g>
+          <g data-legend-semantic-kind="security" data-legend-kind="security" data-legend-label="Security" data-legend-x="440" data-legend-baseline="464" data-legend-width="83">
+            <rect x="440" y="455" width="16" height="10" rx="2.5" class="c-security" stroke-width="1"/>
+            <text x="462" y="464" class="t-muted" font-size="10" font-weight="500">Security</text>
+          </g>
+          <g data-legend-semantic-kind="messagebus" data-legend-kind="messagebus" data-legend-label="Message bus" data-legend-x="545" data-legend-baseline="464" data-legend-width="98">
+            <rect x="545" y="455" width="16" height="10" rx="2.5" class="c-messagebus" stroke-width="1"/>
+            <text x="567" y="464" class="t-muted" font-size="10" font-weight="500">Message bus</text>
+          </g>
+          <g data-legend-semantic-kind="external" data-legend-kind="external" data-legend-label="External" data-legend-x="665" data-legend-baseline="464" data-legend-width="83">
+            <rect x="665" y="455" width="16" height="10" rx="2.5" class="c-external" stroke-width="1"/>
+            <text x="687" y="464" class="t-muted" font-size="10" font-weight="500">External</text>
+          </g>
+        </g>
+      </svg>

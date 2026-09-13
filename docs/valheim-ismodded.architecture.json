@@ -1,0 +1,272 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Valheim 1.0 :: isModded & Achievement Architecture",
+    "subtitle": "Decoupling Voluntary Mod Detection from Steam Achievement Progression",
+    "quality_profile": "showcase",
+    "visual_preset": "signal-flow",
+    "viewBox": [1200, 480],
+    "views": [
+      {
+        "id": "full-flow",
+        "label": "End-to-End Unlock Flow",
+        "focus": ["player_events", "player_profile", "cheat_eval", "ach_gate", "steamworks_api", "steam_client"],
+        "note": "Follow legitimate player progression from boss kill to Steam achievement unlock."
+      },
+      {
+        "id": "modded-trap",
+        "label": "Vanilla Mod Lockout",
+        "focus": ["bepinex", "is_modded_flag", "cheat_eval"],
+        "note": "BepInEx sets Game.isModded=true, causing vanilla IsCheatedAtAll() to silently discard stats."
+      },
+      {
+        "id": "harmony-fix",
+        "label": "IsModded Prefix Decoupling",
+        "focus": ["is_modded_flag", "ismodded_hook", "cheat_eval", "ach_gate"],
+        "note": "IsModded.dll intercepts IsCheatedAtAll(), preserving cheat guards while ignoring isModded."
+      },
+      {
+        "id": "audit-verification",
+        "label": "Zero-Overhead Verification",
+        "focus": ["verifier_tool", "f5_terminal", "player_profile", "cheat_eval"],
+        "note": "Verify bytecode integrity with Verify-IsModded CLI or run live memory audits with F5."
+      }
+    ]
+  },
+  "components": [
+    {
+      "id": "bepinex",
+      "type": "frontend",
+      "label": "BepInEx 5.4.2202",
+      "sublabel": "Chainloader Bootstrap",
+      "tag": "Mod Runtime",
+      "brand": "github",
+      "pos": [40, 80],
+      "size": [140, 60]
+    },
+    {
+      "id": "is_modded_flag",
+      "type": "database",
+      "label": "Game.isModded",
+      "sublabel": "Static Flag: true",
+      "tag": "Voluntary Flag",
+      "pos": [280, 80],
+      "size": [140, 60]
+    },
+    {
+      "id": "ismodded_hook",
+      "type": "security",
+      "label": "IsModded.dll",
+      "sublabel": "Harmony Prefix Hook",
+      "tag": "8.7 KB Plugin",
+      "brand": "dotnet",
+      "pos": [520, 80],
+      "size": [150, 60]
+    },
+    {
+      "id": "player_events",
+      "type": "external",
+      "label": "Player Actions",
+      "sublabel": "Boss kills / Crafting",
+      "tag": "In-Game Event",
+      "pos": [40, 210],
+      "size": [140, 60]
+    },
+    {
+      "id": "player_profile",
+      "type": "backend",
+      "label": "PlayerProfile",
+      "sublabel": "IncrementStat()",
+      "tag": "Stat Dispatcher",
+      "pos": [280, 210],
+      "size": [140, 60]
+    },
+    {
+      "id": "cheat_eval",
+      "type": "security",
+      "label": "Cheat Evaluator",
+      "sublabel": "IsCheatedAtAll()",
+      "tag": "Vanilla: Mod Block",
+      "pos": [520, 210],
+      "size": [150, 60]
+    },
+    {
+      "id": "ach_gate",
+      "type": "backend",
+      "label": "Achievement Gate",
+      "sublabel": "CanGetAchievements()",
+      "tag": "Progression Gate",
+      "pos": [750, 210],
+      "size": [150, 60]
+    },
+    {
+      "id": "steamworks_api",
+      "type": "messagebus",
+      "label": "Steamworks.NET",
+      "sublabel": "SetAchievement()",
+      "tag": "Native Steam API",
+      "pos": [980, 210],
+      "size": [150, 60]
+    },
+    {
+      "id": "verifier_tool",
+      "type": "frontend",
+      "label": "Verify-IsModded",
+      "sublabel": "CLI & PowerShell",
+      "tag": "IL Decompiler",
+      "brand": "dotnet",
+      "pos": [280, 340],
+      "size": [140, 60]
+    },
+    {
+      "id": "f5_terminal",
+      "type": "frontend",
+      "label": "F5 Console",
+      "sublabel": "Command: 'ismodded'",
+      "tag": "Live Memory Audit",
+      "pos": [520, 340],
+      "size": [150, 60]
+    },
+    {
+      "id": "steam_client",
+      "type": "cloud",
+      "label": "Steam Client",
+      "sublabel": "Overlay & Community",
+      "tag": "Achievement Unlocked",
+      "pos": [980, 340],
+      "size": [150, 60]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "Valheim 1.0 Unity Runtime",
+      "wraps": ["bepinex", "is_modded_flag", "ismodded_hook", "player_events", "player_profile", "cheat_eval", "ach_gate", "steamworks_api"]
+    },
+    {
+      "kind": "security-group",
+      "label": "Community Proof",
+      "wraps": ["verifier_tool", "f5_terminal"]
+    }
+  ],
+  "connections": [
+    {
+      "id": "bep-to-flag",
+      "from": "bepinex",
+      "to": "is_modded_flag",
+      "label": "SetIsModdedTrue()",
+      "labelDy": -24,
+      "variant": "dashed"
+    },
+    {
+      "id": "flag-to-hook",
+      "from": "is_modded_flag",
+      "to": "ismodded_hook",
+      "label": "Decoupled (ignored)",
+      "labelDy": -24,
+      "variant": "security"
+    },
+    {
+      "id": "hook-to-eval",
+      "from": "ismodded_hook",
+      "to": "cheat_eval",
+      "label": "HarmonyPrefix Hook",
+      "labelDy": 20,
+      "variant": "emphasis",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "action-to-profile",
+      "from": "player_events",
+      "to": "player_profile",
+      "label": "Trigger Stat",
+      "labelDy": -24,
+      "variant": "emphasis"
+    },
+    {
+      "id": "profile-to-eval",
+      "from": "player_profile",
+      "to": "cheat_eval",
+      "label": "CanGetAchievements()",
+      "labelDy": -24,
+      "variant": "emphasis"
+    },
+    {
+      "id": "eval-to-gate",
+      "from": "cheat_eval",
+      "to": "ach_gate",
+      "label": "returns false (Clean)",
+      "labelDy": -24,
+      "variant": "emphasis"
+    },
+    {
+      "id": "gate-to-steamworks",
+      "from": "ach_gate",
+      "to": "steamworks_api",
+      "label": "Unlock Call",
+      "labelDy": -24,
+      "variant": "emphasis"
+    },
+    {
+      "id": "steamworks-to-client",
+      "from": "steamworks_api",
+      "to": "steam_client",
+      "label": "StoreStats() Sync",
+      "labelDy": 20,
+      "variant": "emphasis",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "verifier-to-profile",
+      "from": "verifier_tool",
+      "to": "player_profile",
+      "label": "Bytecode Scan",
+      "labelDy": -20,
+      "variant": "dashed",
+      "fromSide": "top",
+      "toSide": "bottom"
+    },
+    {
+      "id": "f5-to-eval",
+      "from": "f5_terminal",
+      "to": "cheat_eval",
+      "label": "Runtime Audit",
+      "labelDy": -20,
+      "variant": "dashed",
+      "fromSide": "top",
+      "toSide": "bottom"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "rose",
+      "title": "The Vanilla 1.0 Trap",
+      "items": [
+        "BepInEx Chainloader sets Game.isModded = true on startup",
+        "Achievements.IsCheatedAtAll() directly tests Game.isModded",
+        "All achievement stats are dropped before reaching Steam"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "The IsModded Fix",
+      "items": [
+        "Harmony prefix intercepts Achievements.IsCheatedAtAll()",
+        "Preserves legitimate cheat detection (console, modifiers, items)",
+        "Decouples Game.isModded so modded players earn achievements"
+      ]
+    },
+    {
+      "dot": "cyan",
+      "title": "Community Proof",
+      "items": [
+        "Verify-IsModded: Standalone IL decompiler & simulation tool",
+        "In-Game F5 Command: Live console audit showing cheat status",
+        "15-line copy-paste snippet available for any mod author"
+      ]
+    }
+  ]
+}
