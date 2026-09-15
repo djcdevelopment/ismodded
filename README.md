@@ -4,11 +4,11 @@
 [![Valheim 1.0](https://img.shields.io/badge/Valheim-1.0%20(Deep%20North)-blue.svg)](#)
 [![BepInEx 5](https://img.shields.io/badge/BepInEx-5.4.2202-green.svg)](#)
 [![Size](https://img.shields.io/badge/Plugin%20Size-8.7%20KB-purple.svg)](#)
-[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/djcdevelopment/ismodded/blob/main/LICENSE)
 
 ---
 
-![IsModded Architecture Banner](./assets/banner.jpg)
+![IsModded Architecture Banner](https://raw.githubusercontent.com/djcdevelopment/ismodded/main/assets/banner.jpg)
 
 ## 📌 Overview
 
@@ -30,12 +30,12 @@ This repository provides an open-source technical breakdown and solution:
 
 The interaction flow below is compiled directly from the formal specification using [Archify](https://github.com/tt-a1i/archify):
 
-![Valheim isModded Architecture Flow](./assets/architecture-archify-dark.png)
+![Valheim isModded Architecture Flow](https://raw.githubusercontent.com/djcdevelopment/ismodded/main/assets/architecture-archify-dark.png)
 
-> **Interactive Viewer**: Open [`docs/valheim-ismodded.html`](./docs/valheim-ismodded.html) in any browser for the full interactive model:
+> **Interactive Viewer**: Open [`docs/valheim-ismodded.html`](https://github.com/djcdevelopment/ismodded/blob/main/docs/valheim-ismodded.html) ([Live Web Preview](https://htmlpreview.github.io/?https://github.com/djcdevelopment/ismodded/blob/main/docs/valheim-ismodded.html)) in any browser for the full interactive model:
 > - **Guided Views**: *End-to-End Unlock Flow*, *Vanilla Mod Lockout*, *IsModded Prefix Decoupling*, and *Zero-Overhead Verification*.
 > - **Navigation**: Dynamic pan, zoom, component metadata inspection, and dark/light theme toggle.
-> - **Source & Vector Exports**: Specification in [`docs/valheim-ismodded.architecture.json`](./docs/valheim-ismodded.architecture.json) and standalone vector in [`assets/architecture-archify.svg`](./assets/architecture-archify.svg).
+> - **Source & Vector Exports**: Specification in [`docs/valheim-ismodded.architecture.json`](https://github.com/djcdevelopment/ismodded/blob/main/docs/valheim-ismodded.architecture.json) and standalone vector in [`assets/architecture-archify.svg`](https://raw.githubusercontent.com/djcdevelopment/ismodded/main/assets/architecture-archify.svg).
 
 ---
 
@@ -43,7 +43,7 @@ The interaction flow below is compiled directly from the formal specification us
 
 To restore Steam achievement progression while running BepInEx:
 
-1. Download [`IsModded.dll`](./dist/IsModded.dll) (8.7 KB) from the repository [`dist/`](./dist/) directory or GitHub Releases.
+1. Download [`IsModded.dll`](https://github.com/djcdevelopment/ismodded/blob/main/dist/IsModded.dll) (8.7 KB) from the repository [`dist/`](https://github.com/djcdevelopment/ismodded/tree/main/dist) directory, GitHub Releases, or Thunderstore.
 2. Place the file into your Valheim BepInEx plugins folder:
    ```text
    <Valheim-Directory>/BepInEx/plugins/IsModded.dll
@@ -154,7 +154,7 @@ Three independent verification methods are provided to audit and confirm achieve
 ---
 
 ### Method 1: Standalone Bytecode Verifier (`Verify-IsModded.exe`)
-A zero-dependency CLI tool built on `Mono.Cecil`. Run [`dist/Verify-IsModded.exe`](./dist/Verify-IsModded.exe) or [`tools/Verify-IsModded.ps1`](./tools/Verify-IsModded.ps1):
+A zero-dependency CLI tool built on `Mono.Cecil`. Run [`dist/Verify-IsModded.exe`](https://github.com/djcdevelopment/ismodded/blob/main/dist/Verify-IsModded.exe) or [`tools/Verify-IsModded.ps1`](https://github.com/djcdevelopment/ismodded/blob/main/tools/Verify-IsModded.ps1):
 
 It decompiles local game assemblies live, detects the CIL instruction targeting `Game.isModded`, and provides an execution matrix:
 

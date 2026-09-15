@@ -1,0 +1,9 @@
+{
+  "name": "IsModded",
+  "version_number": "1.0.0",
+  "website_url": "https://github.com/djcdevelopment/ismodded",
+  "description": "Restore Steam achievement progression while playing modded in Valheim 1.0. Decouples Game.isModded from cheat checks while preserving devcommand anti-cheat.",
+  "dependencies": [
+    "denikson-BepInExPack_Valheim-5.4.2202"
+  ]
+}
