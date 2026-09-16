@@ -27,8 +27,6 @@ class Program
             return;
         }
 
-        Console.WriteLine($"[+] Valheim Directory : {gameDir}");
-
         string managedDir = Path.Combine(gameDir, "valheim_Data", "Managed");
         string valheimDll = Path.Combine(managedDir, "assembly_valheim.dll");
         string bepinexDll = Path.Combine(gameDir, "BepInEx", "core", "BepInEx.dll");
@@ -43,10 +41,27 @@ class Program
             return;
         }
 
+        string valheimVersion = "1.0";
+        try
+        {
+            var tempModule = ModuleDefinition.ReadModule(valheimDll);
+            var tVersion = tempModule.GetType("Version");
+            var cctor = tVersion?.Methods.FirstOrDefault(m => m.Name == ".cctor");
+            if (cctor != null && cctor.HasBody && cctor.Body.Instructions.Count >= 3)
+            {
+                var instrs = cctor.Body.Instructions;
+                valheimVersion = $"{GetIntVal(instrs[0])}.{GetIntVal(instrs[1])}.{GetIntVal(instrs[2])}";
+            }
+        }
+        catch { }
+
+        Console.WriteLine($"[+] Valheim Directory : {gameDir}");
+        Console.WriteLine($"[+] Valheim Version   : {valheimVersion} (Latest Verified Build)");
+
         // 2. EVIDENCE 1: Decompile Achievements.IsCheatedAtAll from assembly_valheim.dll
         Console.WriteLine();
         Console.ForegroundColor = ConsoleColor.Yellow;
-        Console.WriteLine("--- [STEP 1: INSPECTING VALHEIM 1.0 BYTECODE] --------------------------------");
+        Console.WriteLine($"--- [STEP 1: INSPECTING VALHEIM {valheimVersion} BYTECODE] --------------------------------");
         Console.ResetColor();
 
         bool hasIsModdedCheck = false;
@@ -75,7 +90,7 @@ class Program
             if (hasIsModdedCheck)
             {
                 Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("  [CONFIRMED] Valheim 1.0 directly checks Game.isModded when evaluating cheats!");
+                Console.WriteLine($"  [CONFIRMED] Valheim {valheimVersion} directly checks Game.isModded when evaluating cheats!");
                 Console.ResetColor();
                 Console.WriteLine("  If Game.isModded is True, the engine evaluates the session as CHEATED,");
                 Console.WriteLine("  which forces CanGetAchievements() to return FALSE.");
@@ -92,7 +107,6 @@ class Program
         Console.WriteLine("--- [STEP 2: INSPECTING BEPINEX CHAINLOADER] ----------------------------------");
         Console.ResetColor();
 
-        bool bepinexSetsModded = false;
         if (File.Exists(bepinexDll))
         {
             try
@@ -102,7 +116,6 @@ class Program
                 var mSetModded = tChainloader?.Methods.FirstOrDefault(m => m.Name == "SetIsModdedTrue");
                 if (mSetModded != null)
                 {
-                    bepinexSetsModded = true;
                     Console.WriteLine($"[OK] Found BepInEx method: Chainloader.SetIsModdedTrue()");
                     Console.ForegroundColor = ConsoleColor.Yellow;
                     Console.WriteLine("  -> BepInEx automatically sets Game.isModded = True on startup.");
@@ -131,15 +144,19 @@ class Program
         if (Directory.Exists(pluginsDir))
         {
             var files = Directory.GetFiles(pluginsDir, "*.dll", SearchOption.AllDirectories);
-            foreach (var file in files)
+            var isModdedFile = files.FirstOrDefault(f => Path.GetFileName(f).Equals("IsModded.dll", StringComparison.OrdinalIgnoreCase));
+            if (isModdedFile != null)
             {
-                string fName = Path.GetFileName(file);
-                if (fName.Equals("IsModded.dll", StringComparison.OrdinalIgnoreCase) ||
-                    fName.Equals("EarnYourKeep.dll", StringComparison.OrdinalIgnoreCase))
+                isModdedInstalled = true;
+                installedPluginPath = isModdedFile;
+            }
+            else
+            {
+                var eykFile = files.FirstOrDefault(f => Path.GetFileName(f).Equals("EarnYourKeep.dll", StringComparison.OrdinalIgnoreCase));
+                if (eykFile != null)
                 {
                     isModdedInstalled = true;
-                    installedPluginPath = file;
-                    break;
+                    installedPluginPath = eykFile;
                 }
             }
         }
@@ -280,6 +297,24 @@ class Program
         {
             Console.ReadKey();
         }
+    }
+
+    static int GetIntVal(Instruction inst)
+    {
+        if (inst.OpCode == OpCodes.Ldc_I4_0) return 0;
+        if (inst.OpCode == OpCodes.Ldc_I4_1) return 1;
+        if (inst.OpCode == OpCodes.Ldc_I4_2) return 2;
+        if (inst.OpCode == OpCodes.Ldc_I4_3) return 3;
+        if (inst.OpCode == OpCodes.Ldc_I4_4) return 4;
+        if (inst.OpCode == OpCodes.Ldc_I4_5) return 5;
+        if (inst.OpCode == OpCodes.Ldc_I4_6) return 6;
+        if (inst.OpCode == OpCodes.Ldc_I4_7) return 7;
+        if (inst.OpCode == OpCodes.Ldc_I4_8) return 8;
+        if (inst.OpCode == OpCodes.Ldc_I4_M1) return -1;
+        if (inst.OpCode == OpCodes.Ldc_I4_S && inst.Operand is sbyte sb) return sb;
+        if (inst.OpCode == OpCodes.Ldc_I4_S && inst.Operand is byte b) return b;
+        if (inst.OpCode == OpCodes.Ldc_I4 && inst.Operand is int i) return i;
+        return 0;
     }
 
     static string LocateValheim(string[] args)

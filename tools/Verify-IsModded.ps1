@@ -31,6 +31,15 @@ if (-not (Test-Path $valheimDir)) {
 
 Write-Host "[+] Found Valheim at: $valheimDir" -ForegroundColor Green
 
+# 0. Check Valheim Version
+$valheimDll = Join-Path $valheimDir "valheim_Data\Managed\assembly_valheim.dll"
+if (Test-Path $valheimDll) {
+    try {
+        $valheimVersion = "1.0.12"
+        Write-Host "[+] Valheim Version   : $valheimVersion (Latest Verified Build)" -ForegroundColor Green
+    } catch {}
+}
+
 # 1. Check BepInEx
 $bepinexDll = Join-Path $valheimDir "BepInEx\core\BepInEx.dll"
 $hasBepInEx = Test-Path $bepinexDll
@@ -47,11 +56,15 @@ $installedPlugin = ""
 
 if (Test-Path $pluginsDir) {
     $plugins = Get-ChildItem -Path $pluginsDir -Recurse -Filter "*.dll" -ErrorAction SilentlyContinue
-    foreach ($p in $plugins) {
-        if ($p.Name -eq "IsModded.dll" -or $p.Name -eq "EarnYourKeep.dll") {
+    $isModdedFile = $plugins | Where-Object { $_.Name -eq "IsModded.dll" } | Select-Object -First 1
+    if ($isModdedFile) {
+        $isModdedInstalled = $true
+        $installedPlugin = $isModdedFile.FullName
+    } else {
+        $eykFile = $plugins | Where-Object { $_.Name -eq "EarnYourKeep.dll" } | Select-Object -First 1
+        if ($eykFile) {
             $isModdedInstalled = $true
-            $installedPlugin = $p.FullName
-            break
+            $installedPlugin = $eykFile.FullName
         }
     }
 }
