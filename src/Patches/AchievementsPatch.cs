@@ -1,7 +1,7 @@
 namespace IsModded.Patches;
 
+using System;
 using HarmonyLib;
-using UnityEngine;
 
 /// <summary>
 /// Core patch that decouples Game.isModded from Valheim's achievement cheat check.
@@ -9,86 +9,56 @@ using UnityEngine;
 [HarmonyPatch(typeof(Achievements), nameof(Achievements.IsCheatedAtAll))]
 static class Achievements_IsCheatedAtAll_Patch
 {
-    [HarmonyPrefix]
-    static bool Prefix(ref bool __result)
+    private struct PatchState
     {
-        // If disabled in config, fallback to vanilla behavior
+        internal bool Applied;
+        internal bool OriginalIsModded;
+    }
+
+    [HarmonyPrefix]
+    static bool Prefix(ref bool __result, out PatchState __state)
+    {
+        __state = default;
+
         if (!IsModded.AllowWhileModded.Value)
         {
             return true;
         }
 
-        // Valheim caches the check once per frame to avoid duplicate reflection/queries
-        if (Time.frameCount == Achievements.m_cheatCheckFrame)
-        {
-            __result = Achievements.m_cheatCheckCache;
-            return false;
-        }
-
-        Achievements.m_cheatCheckFrame = Time.frameCount;
-
-        // If the user explicitly wants achievements even with devcommands/cheats
         if (IsModded.AllowWithDevcommands.Value)
         {
-            Achievements.m_cheatCheckCache = false;
             __result = false;
             return false;
         }
 
-        // Evaluate genuine in-game cheats:
-        // 1. Did the character use console devcommands?
-        bool profileCheated = (Game.instance != null) && Game.instance.GetPlayerProfile().m_usedCheats;
-        // 2. Does the world have cheat modifiers enabled (e.g. passive enemies, no build cost)?
-        bool worldCheated = Achievements.IsWorldCheated();
-        // 3. Does the player have any spawned/cheated items in inventory?
-        bool itemCheated = (Player.m_localPlayer != null) && Player.m_localPlayer.GetInventory().AnyCheatedItem();
-
-        // THE MAGIC LINE:
-        // Vanilla Valheim 1.0 does:
-        //    Achievements.m_cheatCheckCache = Game.isModded;
-        // We replace that with ONLY checking actual cheats:
-        Achievements.m_cheatCheckCache = profileCheated || worldCheated || itemCheated;
-
-        __result = Achievements.m_cheatCheckCache;
-        return false; // Skip the vanilla method
+        // Run the complete vanilla 1.0.x implementation with only the loader
+        // telemetry flag masked. This preserves Iron Gate's current and future
+        // cheat, item, world-modifier, cache, and official bypass behavior.
+        __state.Applied = true;
+        __state.OriginalIsModded = Game.isModded;
+        Game.isModded = false;
+        return true;
     }
-}
 
-/// <summary>
-/// Secondary guard on CanGetAchievements to ensure achievements remain unlocked.
-/// </summary>
-[HarmonyPatch(typeof(Achievements), nameof(Achievements.CanGetAchievements))]
-static class Achievements_CanGetAchievements_Patch
-{
-    [HarmonyPrefix]
-    static bool Prefix(bool cheated, ref bool __result)
+    [HarmonyPostfix]
+    static void Postfix(PatchState __state)
     {
-        if (!IsModded.AllowWhileModded.Value)
-        {
-            return true;
-        }
+        RestoreIsModded(__state);
+    }
 
-        if (IsModded.AllowWithDevcommands.Value)
-        {
-            __result = true;
-            return false;
-        }
+    [HarmonyFinalizer]
+    static Exception? Finalizer(Exception? __exception, PatchState __state)
+    {
+        RestoreIsModded(__state);
+        return __exception;
+    }
 
-        if (cheated)
+    private static void RestoreIsModded(PatchState state)
+    {
+        if (state.Applied)
         {
-            __result = PlayerProfile.s_bypassCheatChecks;
-            return false;
+            Game.isModded = state.OriginalIsModded;
         }
-
-        // If IsCheatedAtAll returned false (because Game.isModded was ignored), allow achievements!
-        if (!Achievements.IsCheatedAtAll())
-        {
-            __result = true;
-            return false;
-        }
-
-        __result = PlayerProfile.s_bypassCheatChecks;
-        return false;
     }
 }
 

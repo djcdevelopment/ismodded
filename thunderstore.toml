@@ -1,0 +1,29 @@
+[config]
+schemaVersion = '0.0.1'
+
+[package]
+namespace = 'djcdevelopment'
+name = 'IsModded'
+versionNumber = '1.0.4'
+description = 'Restore Steam achievement progression with BepInEx on Valheim 1.0-1.0.15. Preserves vanilla cheat and official bypass logic while ignoring Game.isModded.'
+websiteUrl = 'https://github.com/djcdevelopment/ismodded'
+containsNsfwContent = false
+
+[package.dependencies]
+denikson-BepInExPack_Valheim = '5.4.2202'
+
+[build]
+icon = './icon.png'
+readme = './README.md'
+outdir = './dist'
+
+[[build.copy]]
+source = './bin/Release/IsModded.dll'
+target = 'IsModded.dll'
+
+[publish]
+repository = 'https://thunderstore.io'
+communities = [ 'valheim' ]
+
+[publish.categories]
+valheim = [ 'mods', 'client-side', 'misc' ]

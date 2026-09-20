@@ -1,9 +1,9 @@
-# Valheim 1.0 / 1.0.12 :: isModded & Achievements Architecture
-### *Technical analysis, runtime decoupling, and verification suite for Valheim 1.0 & 1.0.12 Steam achievement progression*
+# Valheim 1.0-1.0.15 :: isModded & Achievements Architecture
+### *Technical analysis, runtime decoupling, and verification suite for Valheim 1.0.x Steam achievement progression*
 
-[![Valheim 1.0.12](https://img.shields.io/badge/Valheim-1.0.12%20(Deep%20North)-blue.svg)](#)
+[![Valheim 1.0.15](https://img.shields.io/badge/Valheim-1.0.15%20verified-blue.svg)](#)
 [![BepInEx 5](https://img.shields.io/badge/BepInEx-5.4.2202-green.svg)](#)
-[![Version](https://img.shields.io/badge/Version-1.0.1-brightgreen.svg)](#)
+[![Version](https://img.shields.io/badge/Version-1.0.4-brightgreen.svg)](#)
 [![Size](https://img.shields.io/badge/Plugin%20Size-11.8%20KB-purple.svg)](#)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/djcdevelopment/ismodded/blob/main/LICENSE)
 
@@ -13,10 +13,12 @@
 
 ## 📌 Overview
 
-**Verified and updated for Valheim 1.0.12** (and 1.0+). During the release of Valheim 1.0 (Deep North / Ashlands), an official community update noted:
+**Supported game versions: Valheim 1.0.0 through 1.0.15. Latest runtime verification: 1.0.15 on 2026-09-20.** The build, Harmony target audit, isolated boot log, package validation, and assembly hashes are recorded in the [fleet compatibility evidence](https://github.com/djcdevelopment/deepnorthtesting/blob/main/docs/compatibility/valheim-1.0.15.md).
+
+During the release of Valheim 1.0 (Deep North / Ashlands), an official community update noted:
 > *"We have learned that you cannot earn achievements while playing modded."*
 
-While some quick-fix mods took lazy approaches to this problem—such as fragile bytecode transpilers or blindly resetting `Game.isModded = false`—they broke with the **Valheim 1.0.12 update** due to internal engine changes to cheat evaluation and bypass flags. `IsModded` was architected from day one with a clean, surgical Harmony prefix on `Achievements.IsCheatedAtAll()`, ensuring 100% resilience across patches without interfering with developer telemetry or genuine devcommand anti-cheat protections.
+Version 1.0.4 runs Iron Gate's complete `Achievements.IsCheatedAtAll()` implementation while temporarily masking only `Game.isModded`. This preserves the 1.0.15 item, world, devcommand, cache, and official bypass rules without copying those rules into the mod.
 
 For players and server communities utilizing client-side quality-of-life plugins—such as inventory management, crafting interfaces, camera adjustments, or administrative utilities—this policy introduced an unintended suppression of Steam achievement progression.
 
@@ -119,30 +121,25 @@ Because `Game.isModded` is `true`, `IsCheatedAtAll()` returns `true`, causing `C
 
 ---
 
-## 🛠️ Implementation: Harmony Prefix Decoupling
+## 🛠️ Implementation: scoped telemetry masking
 
-`IsModded` installs a lightweight Harmony Prefix on `Achievements.IsCheatedAtAll()`. 
-
-The hook preserves authentic cheat validation (`m_usedCheats`, `IsWorldCheated()`, `AnyCheatedItem()`), but decouples `Game.isModded` from the evaluation:
+`IsModded` installs a lightweight Harmony prefix, postfix, and finalizer on `Achievements.IsCheatedAtAll()`. The prefix masks only the loader telemetry flag, the original game method evaluates every vanilla rule, and the postfix/finalizer restores the flag even if the method throws:
 
 ```csharp
 [HarmonyPatch(typeof(Achievements), nameof(Achievements.IsCheatedAtAll))]
 static class Achievements_IsCheatedAtAll_Patch
 {
+    private struct State { internal bool Applied; internal bool Original; }
+
     [HarmonyPrefix]
-    static bool Prefix(ref bool __result)
+    static void Prefix(out State __state)
     {
-        // 1. Evaluate genuine cheat criteria
-        bool profileCheated = (Game.instance != null) && Game.instance.GetPlayerProfile().m_usedCheats;
-        bool worldCheated = Achievements.IsWorldCheated();
-        bool itemCheated = (Player.m_localPlayer != null) && Player.m_localPlayer.GetInventory().AnyCheatedItem();
-
-        // 2. Decouple Game.isModded: only flag if actual cheats were used
-        Achievements.m_cheatCheckCache = profileCheated || worldCheated || itemCheated;
-
-        __result = Achievements.m_cheatCheckCache;
-        return false; // Skip vanilla method execution
+        __state = new State { Applied = true, Original = Game.isModded };
+        Game.isModded = false;
     }
+
+    [HarmonyPostfix]
+    static void Postfix(State __state) => Game.isModded = __state.Original;
 }
 ```
 
@@ -166,13 +163,13 @@ It decompiles local game assemblies live, detects the CIL instruction targeting 
         Valheim 1.0 :: isModded & Achievement Integrity Verifier                
 ================================================================================
 [+] Valheim Directory : C:\Program Files (x86)\Steam\steamapps\common\Valheim
-[+] Valheim Version   : 1.0.12 (Latest Verified Build)
+  [+] Valheim Version   : 1.0.15 (Latest Verified Build)
 
---- [STEP 1: INSPECTING VALHEIM 1.0.12 BYTECODE] --------------------------------
+--- [STEP 1: INSPECTING VALHEIM 1.0.15 BYTECODE] --------------------------------
 [OK] Found method: Achievements.IsCheatedAtAll()
 Scanning instruction stream for Game.isModded access...
   -> IL_005B: ldsfld Game::isModded
-  [CONFIRMED] Valheim 1.0.12 directly checks Game.isModded when evaluating cheats!
+  [CONFIRMED] Valheim 1.0.15 directly checks Game.isModded when evaluating cheats!
   If Game.isModded is True, the engine evaluates the session as CHEATED,
   which forces CanGetAchievements() to return FALSE.
 
@@ -186,7 +183,7 @@ Scanning instruction stream for Game.isModded access...
 [PASS] Verified Harmony prefix hook targeting Achievements.IsCheatedAtAll
 
 --- [STEP 4: LOG FILE INSPECTION] ---------------------------------------------
-[OK] Found in LogOutput.log: [Info   :   BepInEx] Loading [IsModded 1.0.1]
+[OK] Found in LogOutput.log: [Info   :   BepInEx] Loading [IsModded 1.0.4]
 
 ================================================================================
                                 FINAL VERDICT                                    
@@ -232,32 +229,30 @@ Simulation of In-Game Achievement Evaluation (Legitimate Player with Mods):
 
 ## 👨‍💻 Integration Guide (For Mod Authors)
 
-Mod developers wishing to bundle this decoupling logic directly into existing plugins can embed the following standalone patch:
+Mod developers wishing to bundle this decoupling logic directly into existing plugins should use the same scoped mask pattern. See [`src/Patches/AchievementsPatch.cs`](src/Patches/AchievementsPatch.cs); the production version includes configuration handling and a Harmony finalizer so `Game.isModded` is restored if vanilla evaluation throws.
 
 ```csharp
 using HarmonyLib;
-using UnityEngine;
-
 [HarmonyPatch(typeof(Achievements), nameof(Achievements.IsCheatedAtAll))]
 public static class DecoupleModdedAchievementsPatch
 {
+    public struct State { public bool Applied; public bool Original; }
+
     [HarmonyPrefix]
-    public static bool Prefix(ref bool __result)
+    public static void Prefix(out State __state)
     {
-        if (Time.frameCount == Achievements.m_cheatCheckFrame) {
-            __result = Achievements.m_cheatCheckCache;
-            return false;
-        }
-        Achievements.m_cheatCheckFrame = Time.frameCount;
+        __state = new State { Applied = true, Original = Game.isModded };
+        Game.isModded = false;
+    }
 
-        bool profileCheated = (Game.instance != null) && Game.instance.GetPlayerProfile().m_usedCheats;
-        bool worldCheated = Achievements.IsWorldCheated();
-        bool itemCheated = (Player.m_localPlayer != null) && Player.m_localPlayer.GetInventory().AnyCheatedItem();
+    [HarmonyPostfix]
+    public static void Postfix(State __state) => Game.isModded = __state.Original;
 
-        // Decouple Game.isModded: preserve legitimate cheat checks only
-        Achievements.m_cheatCheckCache = profileCheated || worldCheated || itemCheated;
-        __result = Achievements.m_cheatCheckCache;
-        return false;
+    [HarmonyFinalizer]
+    public static Exception Finalizer(Exception error, State __state)
+    {
+        Game.isModded = __state.Original;
+        return error;
     }
 }
 ```

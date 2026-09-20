@@ -10,7 +10,7 @@ public sealed class IsModded : BaseUnityPlugin
 {
     public const string PluginGUID = "djc.valheim.ismodded";
     public const string PluginName = "IsModded";
-    public const string PluginVersion = "1.0.1";
+    public const string PluginVersion = "1.0.4";
 
     // Configuration settings
     public static ConfigEntry<bool> AllowWhileModded = null!;
