@@ -4,8 +4,8 @@ schemaVersion = '0.0.1'
 [package]
 namespace = 'djcdevelopment'
 name = 'IsModded'
-versionNumber = '1.0.4'
-description = 'Restore Steam achievement progression with BepInEx on Valheim 1.0-1.0.15. Preserves vanilla cheat and official bypass logic while ignoring Game.isModded.'
+versionNumber = '1.0.5'
+description = 'Restore Steam achievement progression with BepInEx on Valheim 1.0-1.0.16. Preserves vanilla cheat and official bypass logic while ignoring Game.isModded.'
 websiteUrl = 'https://github.com/djcdevelopment/ismodded'
 containsNsfwContent = false
 

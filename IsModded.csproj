@@ -9,7 +9,7 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AssemblyName>IsModded</AssemblyName>
     <RootNamespace>IsModded</RootNamespace>
-    <Version>1.0.4</Version>
+    <Version>1.0.5</Version>
     <GamePath Condition="'$(GamePath)' == ''">C:\Program Files (x86)\Steam\steamapps\common\Valheim</GamePath>
   </PropertyGroup>
 

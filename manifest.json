@@ -1,8 +1,8 @@
 {
   "name": "IsModded",
-  "version_number": "1.0.4",
+  "version_number": "1.0.5",
   "website_url": "https://github.com/djcdevelopment/ismodded",
-  "description": "Restore Steam achievement progression with BepInEx on Valheim 1.0-1.0.15. Preserves vanilla cheat and official bypass logic while ignoring Game.isModded.",
+  "description": "Restore Steam achievement progression with BepInEx on Valheim 1.0-1.0.16. Preserves vanilla cheat and official bypass logic while ignoring Game.isModded.",
   "dependencies": [
     "denikson-BepInExPack_Valheim-5.4.2202"
   ]

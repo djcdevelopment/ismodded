@@ -1,9 +1,9 @@
-# Valheim 1.0-1.0.15 :: isModded & Achievements Architecture
+# Valheim 1.0-1.0.16 :: isModded & Achievements Architecture
 ### *Technical analysis, runtime decoupling, and verification suite for Valheim 1.0.x Steam achievement progression*
 
-[![Valheim 1.0.15](https://img.shields.io/badge/Valheim-1.0.15%20verified-blue.svg)](#)
+[![Valheim 1.0.16](https://img.shields.io/badge/Valheim-1.0.16%20verified-blue.svg)](#)
 [![BepInEx 5](https://img.shields.io/badge/BepInEx-5.4.2202-green.svg)](#)
-[![Version](https://img.shields.io/badge/Version-1.0.4-brightgreen.svg)](#)
+[![Version](https://img.shields.io/badge/Version-1.0.5-brightgreen.svg)](#)
 [![Size](https://img.shields.io/badge/Plugin%20Size-11.8%20KB-purple.svg)](#)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/djcdevelopment/ismodded/blob/main/LICENSE)
 
@@ -13,12 +13,12 @@
 
 ## 📌 Overview
 
-**Supported game versions: Valheim 1.0.0 through 1.0.15. Latest runtime verification: 1.0.15 on 2026-09-20.** The build, Harmony target audit, isolated boot log, package validation, and assembly hashes are recorded in the [fleet compatibility evidence](https://github.com/djcdevelopment/deepnorthtesting/blob/main/docs/compatibility/valheim-1.0.15.md).
+**Supported game versions: Valheim 1.0.0 through 1.0.16. Latest runtime verification: 1.0.16 on 2026-09-26.** The build, Harmony target audit, isolated boot log, package validation, and assembly hashes are recorded in the [fleet compatibility evidence](https://github.com/djcdevelopment/deepnorthtesting/blob/main/docs/compatibility/valheim-1.0.16.md).
 
 During the release of Valheim 1.0 (Deep North / Ashlands), an official community update noted:
 > *"We have learned that you cannot earn achievements while playing modded."*
 
-Version 1.0.4 runs Iron Gate's complete `Achievements.IsCheatedAtAll()` implementation while temporarily masking only `Game.isModded`. This preserves the 1.0.15 item, world, devcommand, cache, and official bypass rules without copying those rules into the mod.
+Version 1.0.5 runs Iron Gate's complete `Achievements.IsCheatedAtAll()` implementation while temporarily masking only `Game.isModded`. This preserves the 1.0.16 item, world, devcommand, cache, and official bypass rules without copying those rules into the mod.
 
 For players and server communities utilizing client-side quality-of-life plugins—such as inventory management, crafting interfaces, camera adjustments, or administrative utilities—this policy introduced an unintended suppression of Steam achievement progression.
 
